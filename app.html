@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aerator Math - the app</title>
+<style>
+  :root { --accent: #c25e2e; }
+  * { box-sizing: border-box; }
+  body { font-family: Georgia, serif; max-width: 44em; margin: 2em auto; padding: 0 1em; color: #222; background: #fbfaf7; }
+  h1 { color: var(--accent); margin-bottom: 0.1em; }
+  .tag { color: var(--accent); font-style: italic; margin-top: 0; }
+  .card { background: #fff; border: 1px solid #ddd; border-left: 4px solid var(--accent); border-radius: 6px; padding: 1em 1.2em; margin: 1.2em 0; }
+  h3 { margin-top: 0; }
+  label { display: block; font-size: 0.9em; font-weight: 600; margin: 0.7em 0 0.2em; }
+  input { width: 100%; max-width: 12em; padding: 0.4em 0.5em; font-size: 1em; border: 1px solid #bbb; border-radius: 4px; background: #f4f3ef; }
+  .big { font-weight: 600; color: var(--accent); line-height: 1.45; margin-top: 0.9em; }
+  .err { color: #a33; }
+  a { color: var(--accent); }
+  .foot { margin-top: 2.5em; font-size: 0.85em; color: #777; }
+</style>
+</head>
+<body>
+<h1>Aerator Math</h1>
+<p class="tag">Coverage truth, depth truth and pattern truth - labeled norms, honest arithmetic.</p>
+
+<div class="card">
+  <h3>The coverage truth</h3>
+  <label for="c-claim">Claimed drum width (inches)</label>
+  <input id="c-claim" type="number" step="any" value="19">
+  <label for="c-sqft">Lawn size (square feet)</label>
+  <input id="c-sqft" type="number" step="any" value="5000">
+  <p class="big" id="c-out"></p>
+</div>
+
+<div class="card">
+  <h3>The depth truth</h3>
+  <label for="d-claim">Claimed plug depth (inches)</label>
+  <input id="d-claim" type="number" step="any" value="4">
+  <p class="big" id="d-out"></p>
+</div>
+
+<div class="card">
+  <h3>The pattern truth</h3>
+  <label for="p-claim">Claimed holes per square foot</label>
+  <input id="p-claim" type="number" step="any" value="6">
+  <p class="big" id="p-out"></p>
+</div>
+
+<p class="foot">The 0.85 overlap norm, the 1.5-mile-an-hour walk norm, the 0.65 and 0.85 depth norms, the 2.5-inch plug bar and the 0.6 pattern norm are labeled norms - the arithmetic is honest, and the last pass at dusk keeps the honest ledger.</p>
+
+<script src="engine.js"></script>
+<script>
+function g(id){ return document.getElementById(id); }
+function v(id){ return parseFloat(g(id).value); }
+function show(id, msg, isErr){ var el = g(id); el.textContent = msg; el.className = isErr ? "err big" : "big"; }
+
+function runCoverage(){
+  var args = [v("c-claim"), v("c-sqft")];
+  var r = AeratorMath.coveragePlan.apply(null, args);
+  if (r.error) return show("c-out", r.error, true);
+  show("c-out", AeratorMath.renderCoverage.apply(null, [r].concat(args)), false);
+}
+function runDepth(){
+  var args = [v("d-claim")];
+  var r = AeratorMath.depthPlan.apply(null, args);
+  if (r.error) return show("d-out", r.error, true);
+  show("d-out", AeratorMath.renderDepth.apply(null, [r].concat(args)), false);
+}
+function runPattern(){
+  var args = [v("p-claim")];
+  var r = AeratorMath.patternPlan.apply(null, args);
+  if (r.error) return show("p-out", r.error, true);
+  show("p-out", AeratorMath.renderPattern.apply(null, [r].concat(args)), false);
+}
+
+["c-claim","c-sqft"].forEach(function(id){ g(id).addEventListener("input", runCoverage); });
+["d-claim"].forEach(function(id){ g(id).addEventListener("input", runDepth); });
+["p-claim"].forEach(function(id){ g(id).addEventListener("input", runPattern); });
+runCoverage(); runDepth(); runPattern();
+</script>
+</body>
+</html>
